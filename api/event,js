@@ -1,0 +1,48 @@
+// api/events.js
+
+export default function handler(req, res) {
+  const { randomstring } = req.query;
+
+  // Set headers for SSE
+  res.setHeader('Content-Type', 'text/event-stream');
+  res.setHeader('Cache-Control', 'no-cache');
+  res.setHeader('Connection', 'keep-alive');
+  res.flushHeaders();
+
+  // Store clients grouped by randomstring (this will persist only during this request)
+  const eventClients = [];
+
+  // Add client to the group
+  eventClients.push(res);
+
+  // Function to broadcast message to the group
+  const broadcastToGroup = (message) => {
+    eventClients.forEach(client => client.write(`data: ${JSON.stringify(message)}\n\n`));
+  };
+
+  // Broadcast client count to all clients in the group
+  const broadcastClientCount = () => {
+    const clientCount = eventClients.length;
+    broadcastToGroup({ clientCount });
+  };
+
+  // Send keep-alive comment every 30 seconds
+  const keepAliveInterval = setInterval(() => {
+    res.write(': keep-alive\n\n');
+  }, 30000);
+
+  // Handle cleanup and client disconnect
+  req.on('close', () => {
+    clearInterval(keepAliveInterval);
+    const index = eventClients.indexOf(res);
+    if (index > -1) {
+      eventClients.splice(index, 1);
+    }
+    broadcastClientCount();
+  });
+
+  console.log(`New client connected to group ${randomstring}. Active clients: ${eventClients.length}`);
+  
+  // Send client count to all connected clients
+  broadcastClientCount();
+}
