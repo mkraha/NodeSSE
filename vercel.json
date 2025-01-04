@@ -2,23 +2,15 @@
     "version": 2,
     "builds": [
       {
-        "src": "api/events.js",
-        "use": "@vercel/node",
-        "runtime": "edge"
-      },
-      {
         "src": "server.js",
         "use": "@vercel/node"
       }
     ],
     "routes": [
       {
-        "src": "/api/events",
-        "dest": "api/events.js"
-      },
-      {
         "src": "/(.*)",
-        "dest": "server.js"
+        "dest": "/server.js"
       }
     ]
-}  
+ }
+  
