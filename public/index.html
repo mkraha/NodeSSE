@@ -3,109 +3,46 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SSE Demo</title>
+  <title>Enter Event</title>
   <style>
     body {
       font-family: Arial, sans-serif;
-      margin: 20px;
+      text-align: center;
+      margin-top: 50px;
     }
-    #messages {
-      margin-bottom: 20px;
-      max-height: 300px;
-      overflow-y: auto;
-      border: 1px solid #ccc;
+    input, button {
       padding: 10px;
-      background-color: #f9f9f9;
-    }
-    #messageForm {
-      display: flex;
-      gap: 10px;
-    }
-    #messageForm input {
-      padding: 10px;
-      width: 300px;
-    }
-    #messageForm button {
-      padding: 10px;
-      cursor: pointer;
-      background-color: #007BFF;
-      color: white;
-      border: none;
-      border-radius: 5px;
-    }
-    #messageForm button:hover {
-      background-color: #0056b3;
+      font-size: 16px;
+      margin: 5px;
     }
   </style>
 </head>
 <body>
-  <h1>Server-Sent Events (SSE) Demo</h1>
-  <div id="header">Connected Clients: 0</div>
-  
-  <div id="messages"></div>
-  
-  <div id="messageForm">
-    <input type="text" id="messageInput" placeholder="Type a message" />
-    <button onclick="sendMessage()">Send Message</button>
-  </div>
+  <h1>Enter Event Group</h1>
+  <p>Generate a random event group or enter one manually.</p>
+  <input type="text" id="randomString" placeholder="Enter or Generate Random String" />
+  <button onclick="generateRandomString()">Generate Random String</button>
+  <br>
+  <input type="text" id="username" placeholder="Enter your name" />
+  <button onclick="joinGroup()">Join Event</button>
 
   <script>
-    // Connect to the SSE endpoint
-    const eventSource = new EventSource('/events');
+    function generateRandomString() {
+      const randomString = Math.random().toString(36).substring(2, 10);
+      document.getElementById('randomString').value = randomString;
+    }
 
-    // Function to display incoming messages
-    eventSource.onmessage = function(event) {
-      const data = JSON.parse(event.data);
+    function joinGroup() {
+      const randomString = document.getElementById('randomString').value.trim();
+      const username = document.getElementById('username').value.trim();
 
-      if (data.clientCount !== undefined) {
-        document.getElementById('header').textContent = `Connected Clients: ${data.clientCount}`;
-      }
-      
-      const messageDiv = document.createElement('div');
-      messageDiv.textContent = `[${new Date(data.timestamp).toLocaleTimeString()}] ${data.message}`;
-      const messagesContainer = document.getElementById('messages');
-      messagesContainer.appendChild(messageDiv);
-
-      // Scroll to the latest message
-      messagesContainer.scrollTop = messagesContainer.scrollHeight;
-    };
-
-    // Handle errors in the SSE connection
-    eventSource.onerror = function(error) {
-      console.error('Error with SSE connection:', error);
-      const messagesContainer = document.getElementById('messages');
-      const errorDiv = document.createElement('div');
-      errorDiv.textContent = 'Connection lost. Retrying...';
-      errorDiv.style.color = 'red';
-      messagesContainer.appendChild(errorDiv);
-    };
-
-    // Function to send a custom message to the server
-    function sendMessage() {
-      const messageInput = document.getElementById('messageInput');
-      const message = messageInput.value.trim();
-
-      if (!message) {
-        alert('Please enter a message.');
+      if (!randomString || !username) {
+        alert('Both random string and username are required!');
         return;
       }
 
-      fetch('/message', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ message }),
-      })
-      .then(response => response.json())
-      .then(data => {
-        console.log('Message sent:', data);
-        messageInput.value = '';
-      })
-      .catch(error => {
-        console.error('Error sending message:', error);
-        alert('Failed to send the message. Please try again.');
-      });
+      // Redirect to the messaging page
+      window.location.href = `/${randomString}?name=${encodeURIComponent(username)}`;
     }
   </script>
 </body>
